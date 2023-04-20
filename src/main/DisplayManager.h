@@ -7,10 +7,10 @@
 
 #pragma once
 
+#include "Dpms.h"
 #include "SessionState.h"
 #include <QObject>
 
-class Dpms;
 class QTimer;
 
 class DisplayManager : public QObject
@@ -28,13 +28,21 @@ private slots:
     void onWatchdogTimeout();
 
 private:
-    void switchOff(bool immediate);
-    void switchOn();
+    void saveDpmsState();
+    void restoreDpmsState();
+
+    void adjustDpmsForLockedState(bool immediateSwitchOff);
 
 private:
+    struct DpmsState
+    {
+        bool enabled{};
+        Dpms::Timeouts timeouts{};
+    };
+
     Dpms* dpms_;
     QTimer* watchdog_;
-    bool dpmsWasEnabled_;
+    DpmsState dpmsState_;
 
     Q_DISABLE_COPY_MOVE(DisplayManager)
 };

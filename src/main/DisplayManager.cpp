@@ -7,13 +7,13 @@
 
 #include "DisplayManager.h"
 
-#include "Dpms.h"
+#include "Logging.h"
 #include <QTimer>
 
 namespace {
 
 constexpr int WATCHDOG_INTERVAL = 10000;
-constexpr int OFF_TIMEOUT = 10000;
+constexpr Dpms::Timeouts OFF_TIMEOUTS{10};
 
 } // namespace
 
@@ -21,7 +21,7 @@ DisplayManager::DisplayManager(Dpms* dpms, QObject* parent) :
     QObject(parent),
     dpms_(dpms),
     watchdog_(new QTimer(this)),
-    dpmsWasEnabled_{false}
+    dpmsState_{}
 {
     watchdog_->setSingleShot(false);
     watchdog_->setInterval(WATCHDOG_INTERVAL);
@@ -37,14 +37,14 @@ void DisplayManager::onSessionStateChanged(Session::State state)
     switch (state)
     {
         case Session::State::Locked:
-            dpmsWasEnabled_ = dpms_->isEnabled();
-            switchOff(false);
+            saveDpmsState();
+            adjustDpmsForLockedState(false);
             watchdog_->start();
             break;
 
         case Session::State::Unlocked:
             watchdog_->stop();
-            switchOn();
+            restoreDpmsState();
             break;
     }
 }
@@ -57,18 +57,29 @@ void DisplayManager::onWatchdogTimeout()
     }
 }
 
-void DisplayManager::switchOff(bool immediate)
+void DisplayManager::saveDpmsState()
 {
-    if (!dpms_->isEnabled())
-        dpms_->setEnabled(true);
-    dpms_->setTimeout(OFF_TIMEOUT);
-    if (immediate)
-        dpms_->forceState(Dpms::State::Off);
+    dpmsState_.enabled = dpms_->isEnabled();
+    dpmsState_.timeouts = dpms_->timeouts();
+
+    LOG(DEBUG) << "Remember current dpms state: enabled:" << dpmsState_.enabled << " standby:" << dpmsState_.timeouts.standby;
 }
 
-void DisplayManager::switchOn()
+void DisplayManager::restoreDpmsState()
 {
-    dpms_->setTimeout(0);
-    if (dpmsWasEnabled_)
-        dpms_->setEnabled(false);
+    LOG(DEBUG) << "Restore previouse dpms state";
+
+    dpms_->setTimeouts(dpmsState_.timeouts);
+    dpms_->setEnabled(dpmsState_.enabled);
+}
+
+void DisplayManager::adjustDpmsForLockedState(bool immediateSwitchOff)
+{
+    LOG(DEBUG) << "Set short dpms timeouts";
+
+    dpms_->setTimeouts(OFF_TIMEOUTS);
+    dpms_->setEnabled(true);
+
+    if (immediateSwitchOff)
+        dpms_->forceState(Dpms::State::Off);
 }

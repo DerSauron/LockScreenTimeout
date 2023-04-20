@@ -64,17 +64,18 @@ bool XCBDpms::available() const
     return capable && capable->capable;
 }
 
-uint16_t XCBDpms::timeout() const
+Dpms::Timeouts XCBDpms::timeouts() const
 {
     auto timeouts = dpmsTimeouts();
     if (!timeouts)
         return 0;
-    return timeouts->standby_timeout;
+    return {timeouts->standby_timeout, timeouts->suspend_timeout, timeouts->off_timeout};
 }
 
-void XCBDpms::setTimeout(uint16_t timeout)
+void XCBDpms::setTimeouts(const Timeouts& timeouts)
 {
-    xcb_dpms_set_timeouts(QX11Info::connection(), timeout, timeout + 1, timeout + 2);
+    auto* c = QX11Info::connection();
+    xcb_dpms_set_timeouts_checked(c, timeouts.standby, timeouts.suspend, timeouts.off);
 }
 
 bool XCBDpms::isEnabled() const

@@ -18,8 +18,8 @@ public:
 
     bool available() const override;
 
-    uint16_t timeout() const override;
-    void setTimeout(uint16_t timeout) override;
+    Timeouts timeouts() const override;
+    void setTimeouts(const Timeouts& timeouts) override;
 
     bool isEnabled() const override;
     void setEnabled(bool enabled) override;

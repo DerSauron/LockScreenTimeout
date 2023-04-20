@@ -21,6 +21,35 @@ public:
         Off,
     };
 
+
+    struct Timeouts
+    {
+        constexpr Timeouts() :
+            standby{0},
+            suspend{0},
+            off{0}
+        {
+        }
+
+        constexpr Timeouts(uint16_t ti) :
+            standby{ti},
+            suspend{ti},
+            off{ti}
+        {
+        }
+
+        constexpr Timeouts(uint16_t st, uint16_t su, uint16_t of) :
+            standby{st},
+            suspend{su},
+            off{of}
+        {
+        }
+
+        uint16_t standby;
+        uint16_t suspend;
+        uint16_t off;
+    };
+
 public:
     static std::unique_ptr<Dpms> create();
 
@@ -28,8 +57,8 @@ public:
 
     virtual bool available() const = 0;
 
-    virtual uint16_t timeout() const = 0;
-    virtual void setTimeout(uint16_t timeout) = 0;
+    virtual Timeouts timeouts() const = 0;
+    virtual void setTimeouts(const Timeouts& timeout) = 0;
 
     virtual bool isEnabled() const = 0;
     virtual void setEnabled(bool enabled) = 0;
