@@ -12,7 +12,7 @@
 
 namespace {
 
-constexpr int WATCHDOG_INTERVAL = 10000;
+constexpr int WATCHDOG_INTERVAL{30000};
 constexpr Dpms::Timeouts OFF_TIMEOUTS{10};
 
 } // namespace
@@ -51,10 +51,7 @@ void DisplayManager::onSessionStateChanged(Session::State state)
 
 void DisplayManager::onWatchdogTimeout()
 {
-    if (dpms_->state() != Dpms::State::Off)
-    {
-        switchOff(true);
-    }
+    // TODO implement some logic to detect if screen is on while in locked mode
 }
 
 void DisplayManager::saveDpmsState()

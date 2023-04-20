@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
     QObject::connect(&listener, &SessionListener::sessionStateChanged,
                      &displayManager, &DisplayManager::onSessionStateChanged);
 
-    LOG(INFO) << "Service started. Waiting for screen saver state changes";
+    LOG(INFO) << "Service started. Watching for screen saver state changes";
 
     int ret = QGuiApplication::exec();
 
