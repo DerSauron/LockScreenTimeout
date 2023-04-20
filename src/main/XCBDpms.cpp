@@ -86,12 +86,16 @@ bool XCBDpms::isEnabled() const
 
 void XCBDpms::setEnabled(bool enabled)
 {
-    xcb_dpms_enable(QX11Info::connection());
+    if (enabled)
+        xcb_dpms_enable_checked(QX11Info::connection());
+    else
+        xcb_dpms_disable_checked(QX11Info::connection());
 }
 
 Dpms::State XCBDpms::state() const
 {
     auto info = dpmsInfo();
+
     if (info && info->state)
     {
         switch (info->power_level)
