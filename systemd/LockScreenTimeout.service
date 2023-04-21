@@ -1,0 +1,12 @@
+[Unit]
+Description=Prevent Screen from blanking when not locked
+PartOf=graphical-session.target
+After=network.target
+
+[Service]
+ExecStart=lockscreentimeout
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target
